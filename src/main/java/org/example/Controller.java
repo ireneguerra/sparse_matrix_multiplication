@@ -1,44 +1,60 @@
 package org.example;
 
-//C:\\Users\\irene\\IdeaProjects\\sparse_matrix_multiplication\\
+
+import org.example.matrix.*;
+import org.example.matrixbuilders.*;
+import org.example.operators.MatrixMultiplication;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 
 public class Controller {
-    MatrixReader reader = new MatrixReader();
-    List<COOMatrix> matrix = new ArrayList<>();
+    CoordinateBuilder reader = new CoordinateBuilder();
+    List<CoordinateMatrix> matrix = new ArrayList<>();
 
     public void controller() {
         try {
-            matrix = reader.matrixReader("src\\main\\resources\\mc2depi.mtx");
+            matrix = reader.matrixReader("src\\main\\resources\\bcsstk12.mtx");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("leida");
-        CRSConversor crsConversor = new CRSConversor();
-        CRSMatrix crsMatrix = crsConversor.convert(matrix);
-        System.out.println("convertida a crs");
-        CCSConversor ccsConversor = new CCSConversor();
-        CCSMatrix ccsMatrix = ccsConversor.convert(matrix);
-        System.out.println("convertida a ccs");
+        CoordinateToCRS crsConverter = new CoordinateToCRS();
+        CRSMatrix crsMatrix = crsConverter.convert(matrix);
+        CoordinateToCCS ccsConverter = new CoordinateToCCS();
+        CCSMatrix ccsMatrix = ccsConverter.convert(matrix);
+        //System.out.println("CRS:" + crsMatrix.getRow_ptr() + " " + crsMatrix.getCol() + " " + crsMatrix.getValue());
+        //System.out.println("CCS:" + ccsMatrix.getCol_ptr() + " " + ccsMatrix.getRow() + " " + ccsMatrix.getValue());
+        SparseMatrix  sparseMatrix = benchmarkMultiplication(crsMatrix, ccsMatrix);
+        //printSparseMatrix(sparseMatrix);
+        //printDenseMatrix(sparseMatrix);
+    }
+
+    private SparseMatrix benchmarkMultiplication (CRSMatrix crsMatrix, CCSMatrix ccsMatrix){
         MatrixMultiplication matrixMultiplication = new MatrixMultiplication();
-        long startTime = System.currentTimeMillis();
+        double startTime = System.currentTimeMillis();
         SparseMatrix sparseMatrix = matrixMultiplication.multiply(crsMatrix, ccsMatrix);
-        long endTime = System.currentTimeMillis();
-        long elapsedTime = endTime - startTime;
-        System.out.println("Elapsed time: " + elapsedTime + " ms");
-       /* System.out.println(sparseMatrix);
-        for (int i = 0; i < sparseMatrix.getNumRows(); i++) {
-            for (int j = 0; j < sparseMatrix.getNumCols(); j++) {
-                System.out.print(sparseMatrix.get(i, j) + " ");
+        double endTime = System.currentTimeMillis();
+        double elapsedTime = endTime - startTime;
+        System.out.println(elapsedTime / 1000 + " seconds");
+        return sparseMatrix;
+    }
+
+    private void printSparseMatrix(SparseMatrix sparseMatrix) {
+        for (CoordinateMatrix coordinateMatrix : sparseMatrix.getCoordinates()) {
+            System.out.println(coordinateMatrix.getRow() + " " + coordinateMatrix.getCol() + " " + coordinateMatrix.getValue());
+        }
+    }
+
+    private void printDenseMatrix(SparseMatrix sparseMatrix) {
+        SparseToDenseMatrix denseConverter = new SparseToDenseMatrix();
+        DenseMatrix denseMatrix = denseConverter.convert(sparseMatrix);
+        double[][] matrix = denseMatrix.getMatrix();
+        for (int i = 0; i < denseMatrix.getSize(); i++) {
+            for (int j = 0; j < denseMatrix.getSize(); j++) {
+                System.out.printf(matrix[i][j] + " ");
             }
             System.out.println();
         }
-*/
-
     }
-
 }

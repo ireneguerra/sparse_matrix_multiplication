@@ -1,4 +1,9 @@
-package org.example;
+package org.example.operators;
+
+import org.example.matrix.SparseMatrix;
+import org.example.matrixbuilders.SparseMatrixBuilder;
+import org.example.matrix.CCSMatrix;
+import org.example.matrix.CRSMatrix;
 
 public class MatrixMultiplication {
     public SparseMatrix multiply(CRSMatrix a, CCSMatrix b){
@@ -10,7 +15,7 @@ public class MatrixMultiplication {
                 int iEnd = a.getRow_ptr().get(i + 1);
                 int jj = b.getCol_ptr().get(j);
                 int jEnd = b.getCol_ptr().get(j + 1);
-                long s = 0;
+                double s = 0;
                 while (ii < iEnd && jj < jEnd) {
                     int aa = a.getCol().get(ii);
                     int bb = b.getRow().get(jj);
@@ -23,9 +28,10 @@ public class MatrixMultiplication {
                     } else {
                         jj++;
                     }
-                    if (s != 0) {
-                        builder.set(i, j, s);
+
                     }
+                    if (s != 0) {
+                    builder.set(i, j, s);
                 }
 
             }
